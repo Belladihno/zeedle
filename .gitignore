@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# env (exclude example)
+.env*
+!.env.example
+
+# builds
+dist/
+.turbo/
+.next/
+
+# logs / os
+*.log
+.DS_Store
+Thumbs.db
