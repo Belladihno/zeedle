@@ -4,7 +4,7 @@ import type {
   TransactionSource,
   TransactionStatus,
   TransactionType,
-} from './enums';
+} from './enums.js';
 
 export interface TransactionDto {
   id: string;
@@ -26,16 +26,16 @@ export interface TransactionDto {
 export const TransactionQuerySchema = z.object({
   type: z.enum(['CREDIT', 'DEBIT']).optional(),
   status: z.enum(['PENDING', 'SUCCESS', 'FAILED', 'REVERSED']).optional(),
-  from: z.string().datetime().optional(),
-  to: z.string().datetime().optional(),
+  from: z.iso.datetime().optional(),
+  to: z.iso.datetime().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 export type TransactionQuery = z.infer<typeof TransactionQuerySchema>;
 
 export const RunSettlementSchema = z.object({
-  periodStart: z.string().datetime(),
-  periodEnd: z.string().datetime(),
+  periodStart: z.iso.datetime(),
+  periodEnd: z.iso.datetime(),
 });
 export type RunSettlementInput = z.infer<typeof RunSettlementSchema>;
 
