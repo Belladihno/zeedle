@@ -10,6 +10,9 @@ dist/
 .turbo/
 .next/
 
+# docs (local only)
+ZEEDLE-TRD.md
+
 # logs / os
 *.log
 .DS_Store
