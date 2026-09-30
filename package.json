@@ -1,0 +1,17 @@
+{
+  "name": "zeedle",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": "22.x",
+    "pnpm": ">=9"
+  },
+  "devDependencies": {
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.9",
+    "secretlint": "13.0.6",
+    "turbo": "2.11.5"
+  }
+}
