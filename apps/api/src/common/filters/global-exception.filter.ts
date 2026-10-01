@@ -15,7 +15,10 @@ interface RequestLike {
 }
 
 interface ResponseLike {
-  status: (code: number) => { send: (body: unknown) => unknown };
+  status?: (code: number) => { send: (body: unknown) => unknown };
+  statusCode?: number;
+  setHeader?: (name: string, value: string) => void;
+  end?: (body: string) => void;
 }
 
 @Catch()
@@ -55,12 +58,23 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : undefined,
     );
 
-    res.status(status).send({
+    const problem = {
       type: 'about:blank',
       title: STATUS_CODES[status] ?? 'Error',
       status,
       detail,
       instance: `${req.method} ${req.url}`,
-    });
+    };
+    // Controller errors surface the Fastify reply; middleware errors surface
+    // the raw response. Speak whichever one we were handed.
+    if (typeof res.status === 'function') {
+      res.status(status).send(problem);
+    } else if (res.end) {
+      res.statusCode = status;
+      res.setHeader?.('content-type', 'application/json');
+      res.end(JSON.stringify(problem));
+    } else {
+      throw exception;
+    }
   }
 }

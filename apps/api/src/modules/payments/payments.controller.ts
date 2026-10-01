@@ -14,8 +14,9 @@ export class PaymentsController {
   initializeFunding(
     @CurrentUser('sub') userId: string,
     @Body() dto: FundWalletDto,
+    @Headers('x-idempotency-key') idempotencyKey: string,
   ): Promise<{ checkoutUrl: string; reference: string }> {
-    return this.payments.initializeFunding(userId, dto.amount);
+    return this.payments.initializeFunding(userId, dto.amount, idempotencyKey);
   }
 
   @Post('webhook')

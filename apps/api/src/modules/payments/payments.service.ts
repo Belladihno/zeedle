@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -8,6 +9,11 @@ import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { DataSource } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
+import {
+  IDEMPOTENCY_KEY_PREFIX,
+  IDEMPOTENCY_TTL_SECONDS,
+} from '../../common/middleware/idempotency.middleware.js';
+import { REDIS_SERVICE, type IRedisService } from '../../core/redis/redis.interface.js';
 import { nairaToKobo } from '../../common/utils/money.util.js';
 import { PaystackClient, type PaystackWebhookData } from '../../infrastructure/paystack/paystack.client.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -27,12 +33,18 @@ export class PaymentsService {
     private readonly paystack: PaystackClient,
     private readonly config: ConfigService,
     private readonly db: DataSource,
+    @Inject(REDIS_SERVICE) private readonly redis: IRedisService,
   ) {}
 
   async initializeFunding(
     userId: string,
     amountNaira: number,
+    idempotencyKey: string | undefined,
   ): Promise<{ checkoutUrl: string; reference: string }> {
+    // IdempotencyMiddleware normally rejects keyless requests before this runs.
+    if (!idempotencyKey) {
+      throw new BadRequestException('x-idempotency-key header is required');
+    }
     const user = await this.users.findById(userId);
     if (!user || user.isDeleted) {
       throw new NotFoundException('User not found');
@@ -43,7 +55,13 @@ export class PaymentsService {
       nairaToKobo(amountNaira),
       reference,
     );
-    return { checkoutUrl: session.authorization_url, reference };
+    const result = { checkoutUrl: session.authorization_url, reference };
+    await this.redis.set(
+      `${IDEMPOTENCY_KEY_PREFIX}${idempotencyKey}`,
+      JSON.stringify(result),
+      IDEMPOTENCY_TTL_SECONDS,
+    );
+    return result;
   }
 
   /** Verifies HMAC-SHA512, then credits the wallet exactly once per reference. */

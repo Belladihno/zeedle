@@ -7,6 +7,10 @@ import {
 import { DataSource } from 'typeorm';
 import { REDIS_SERVICE, type IRedisService } from '../../core/redis/redis.interface.js';
 import { formatNaira, nairaToKobo } from '../../common/utils/money.util.js';
+import {
+  IDEMPOTENCY_KEY_PREFIX,
+  IDEMPOTENCY_TTL_SECONDS,
+} from '../../common/middleware/idempotency.middleware.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { WalletsRepository } from '../wallets/wallets.repository.js';
@@ -15,7 +19,6 @@ import { TransfersRepository } from './transfers.repository.js';
 
 // No fee policy defined yet — transfers are free, fee stays explicitly zero.
 const TRANSFER_FEE_KOBO = 0;
-const IDEMPOTENCY_TTL_SECONDS = 24 * 3600;
 
 export interface TransferReceipt {
   referenceId: string;
@@ -40,15 +43,12 @@ export class TransfersService {
     dto: TransferDto,
     idempotencyKey: string | undefined,
   ): Promise<TransferReceipt> {
+    // IdempotencyMiddleware normally rejects keyless requests before this runs.
     if (!idempotencyKey) {
       throw new BadRequestException('x-idempotency-key header is required');
     }
     if (dto.recipientId === senderId) {
       throw new BadRequestException('Cannot transfer to yourself');
-    }
-    const cached = await this.redis.get(`transfer:${idempotencyKey}`);
-    if (cached) {
-      return JSON.parse(cached) as TransferReceipt;
     }
     await this.users.verifyPin(senderId, dto.pin);
     const recipient = await this.users.findById(dto.recipientId);
@@ -84,7 +84,7 @@ export class TransfersService {
       await queryRunner.release();
     }
     await this.redis.set(
-      `transfer:${idempotencyKey}`,
+      `${IDEMPOTENCY_KEY_PREFIX}${idempotencyKey}`,
       JSON.stringify(receipt),
       IDEMPOTENCY_TTL_SECONDS,
     );

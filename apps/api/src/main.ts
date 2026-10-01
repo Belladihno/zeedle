@@ -8,6 +8,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { Logger } from 'nestjs-pino';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor.js';
+import { SanitizationPipe } from './common/pipes/sanitization.pipe.js';
 import { AppModule } from './app.module.js';
 import { validateEnv } from './core/config/env.validation.js';
 
@@ -60,6 +61,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalInterceptors(new TransformResponseInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new SanitizationPipe(),
   );
 
   // Last resort: request-scoped errors go through GlobalExceptionFilter, but a

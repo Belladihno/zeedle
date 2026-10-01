@@ -1,5 +1,6 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
+import { IdempotencyMiddleware } from './common/middleware/idempotency.middleware.js';
 import { GuardsModule } from './common/guards/guards.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -27,10 +28,16 @@ import { WalletsModule } from './modules/wallets/wallets.module.js';
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, IdempotencyMiddleware],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(RequestIdMiddleware).forRoutes('*');
+    consumer
+      .apply(IdempotencyMiddleware)
+      .forRoutes(
+        { path: 'transfers', method: RequestMethod.POST },
+        { path: 'payments/fund/initialize', method: RequestMethod.POST },
+      );
   }
 }
