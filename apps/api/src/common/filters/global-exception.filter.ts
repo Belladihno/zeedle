@@ -1,0 +1,56 @@
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import { STATUS_CODES } from 'node:http';
+
+interface RequestLike {
+  method: string;
+  url: string;
+  headers: Record<string, string | string[] | undefined>;
+}
+
+interface ResponseLike {
+  status: (code: number) => { send: (body: unknown) => unknown };
+}
+
+/** Maps every exception to RFC 7807 Problem Details. No stack traces reach the client. */
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const ctx = host.switchToHttp();
+    const req = ctx.getRequest<RequestLike>();
+    const res = ctx.getResponse<ResponseLike>();
+
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const header = req.headers['x-request-id'];
+    const requestId = Array.isArray(header) ? header[0] : (header ?? 'unknown');
+
+    const rawMessage =
+      exception instanceof HttpException ? exception.message : 'Unknown error';
+    const detail =
+      status >= 500 ? 'Internal server error' : rawMessage;
+
+    this.logger.error(
+      `requestId=${requestId} method=${req.method} url=${req.url} status=${status} error=${rawMessage}`,
+      exception instanceof Error ? exception.stack : undefined,
+    );
+
+    res.status(status).send({
+      type: 'about:blank',
+      title: STATUS_CODES[status] ?? 'Error',
+      status,
+      detail,
+      instance: `${req.method} ${req.url}`,
+    });
+  }
+}
