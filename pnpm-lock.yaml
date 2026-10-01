@@ -8,6 +8,18 @@ importers:
 
   .:
     devDependencies:
+      '@eslint/js':
+        specifier: 9.39.5
+        version: 9.39.5
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: 13.0.6
+        version: 13.0.6
+      eslint:
+        specifier: 9.39.5
+        version: 9.39.5
+      eslint-plugin-security:
+        specifier: 4.1.0
+        version: 4.1.0
       husky:
         specifier: 9.1.7
         version: 9.1.7
@@ -23,6 +35,9 @@ importers:
       turbo:
         specifier: 2.11.5
         version: 2.11.5
+      typescript-eslint:
+        specifier: 8.71.0
+        version: 8.71.0(eslint@9.39.5)(typescript@5.9.3)
 
   packages/config:
     devDependencies:
@@ -154,6 +169,10 @@ packages:
 
   '@secretlint/resolver@13.0.6':
     resolution: {integrity: sha512-HHTfCjEZvChOFebJ/JBpsqCM/q8hmS6qZq80xbQdVEsdjMmTcTX8E/uvYkOuyozuLCWePpJCnZ6nIxceSvYoog==}
+
+  '@secretlint/secretlint-rule-preset-recommend@13.0.6':
+    resolution: {integrity: sha512-5OdYoPKs7LznSY/mFgpJlSY8ayF+clq0gdfOE0ERVfvUifmIDz0yG/d1ij3wZmfpyOw33tk12zUcDZqrXHFodA==}
+    engines: {node: '>=22.0.0'}
 
   '@secretlint/source-creator@13.0.6':
     resolution: {integrity: sha512-cKO2Y0gh7RMNo4vMtJgmPMDHCuJZSP3aPZ0y+KzWST3wMTNCnPQcECeQeEccdL8b2oBfVLD/UJrb7fbhumXGsw==}
@@ -995,6 +1014,8 @@ snapshots:
   '@secretlint/profiler@13.0.6': {}
 
   '@secretlint/resolver@13.0.6': {}
+
+  '@secretlint/secretlint-rule-preset-recommend@13.0.6': {}
 
   '@secretlint/source-creator@13.0.6':
     dependencies:
