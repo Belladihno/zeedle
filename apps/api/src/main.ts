@@ -11,20 +11,10 @@ import { TransformResponseInterceptor } from './common/interceptors/transform-re
 import { AppModule } from './app.module.js';
 import { validateEnv } from './core/config/env.validation.js';
 
-// Last resort: request-scoped errors go through GlobalExceptionFilter,
-// but a throw outside that path would otherwise kill the process silently.
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception — shutting down', error);
-  process.exit(1);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection', reason);
-});
-
 async function bootstrap(): Promise<void> {
   // Fail fast on misconfiguration — before anything else boots.
   const env = validateEnv();
-
+  
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
@@ -71,6 +61,22 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
   );
+
+  // Last resort: request-scoped errors go through GlobalExceptionFilter, but a
+  // throw outside that path would otherwise kill the process silently. Log it,
+  // let in-flight work settle, then exit so the process manager restarts clean
+  // instead of running on in an unknown state.
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught exception — shutting down', error);
+    setTimeout(() => process.exit(1), 5000).unref();
+    app.close().then(
+      () => process.exit(1),
+      () => process.exit(1),
+    );
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled rejection', reason);
+  });
 
   app.enableShutdownHooks();
   await app.listen(env.PORT, '0.0.0.0');
