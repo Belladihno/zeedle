@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { ChangePinDto } from './dto/change-pin.dto.js';
@@ -14,6 +14,11 @@ export class UsersController {
   @Get('me')
   getProfile(@CurrentUser('sub') userId: string): Promise<unknown> {
     return this.users.getProfile(userId);
+  }
+
+  @Get('resolve/:id')
+  resolveRecipient(@Param('id', ParseUUIDPipe) id: string): Promise<unknown> {
+    return this.users.resolveRecipient(id);
   }
 
   @Patch('me')

@@ -18,6 +18,14 @@ export class UsersService {
     return user;
   }
 
+  async resolveRecipient(id: string): Promise<unknown> {
+    const user = await this.users.findPublicById(id);
+    if (!user) {
+      throw new NotFoundException('Recipient not found');
+    }
+    return user;
+  }
+
   updateProfile(
     userId: string,
     patch: { firstName?: string; lastName?: string; phone?: string },

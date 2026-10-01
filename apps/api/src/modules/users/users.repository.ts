@@ -25,6 +25,14 @@ export class UsersRepository {
     return this.db.getRepository(User).findOneBy({ id });
   }
 
+  /** Public profile for transfer recipient lookup — name only, never contact data. */
+  async findPublicById(id: string): Promise<Pick<User, 'id' | 'firstName' | 'lastName'> | null> {
+    return this.db.getRepository(User).findOne({
+      where: { id, isActive: true, isDeleted: false },
+      select: { id: true, firstName: true, lastName: true },
+    });
+  }
+
   async updateProfile(
     id: string,
     patch: { firstName?: string; lastName?: string; phone?: string },
