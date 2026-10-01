@@ -13,6 +13,7 @@ interface RequestLike {
   user?: JwtPayload;
 }
 
+/** Verifies the RS256 access token and attaches its payload as request.user. */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
