@@ -18,7 +18,6 @@ interface ResponseLike {
   status: (code: number) => { send: (body: unknown) => unknown };
 }
 
-/** Maps every exception to RFC 7807 Problem Details. No stack traces reach the client. */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
@@ -36,9 +35,20 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const requestId = Array.isArray(header) ? header[0] : (header ?? 'unknown');
 
     const rawMessage =
-      exception instanceof HttpException ? exception.message : 'Unknown error';
-    const detail =
-      status >= 500 ? 'Internal server error' : rawMessage;
+      exception instanceof Error ? exception.message : 'Unknown error';
+    // Client errors guide the caller — include what failed. Server errors stay generic.
+    let detail: unknown = 'Internal server error';
+    if (status < 500) {
+      const response =
+        exception instanceof HttpException ? exception.getResponse() : null;
+      if (typeof response === 'string') {
+        detail = response;
+      } else if (response && typeof response === 'object' && 'message' in response) {
+        detail = (response as { message: unknown }).message;
+      } else {
+        detail = rawMessage;
+      }
+    }
 
     this.logger.error(
       `requestId=${requestId} method=${req.method} url=${req.url} status=${status} error=${rawMessage}`,

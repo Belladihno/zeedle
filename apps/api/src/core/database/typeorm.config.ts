@@ -24,6 +24,8 @@ export function buildTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions
     extra: {
       max: 10,
       connectionTimeoutMillis: 10000,
+      // Kills runaway queries instead of hanging the request behind them.
+      statement_timeout: 30000,
     },
   };
 }

@@ -1,8 +1,8 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { instanceToPlain } from 'class-transformer';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-/** Wraps every success response in a standard envelope. */
 @Injectable()
 export class TransformResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -14,7 +14,8 @@ export class TransformResponseInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data) => ({
         success: true,
-        data,
+        // Applies @Exclude() on entities (passwordHash, pinHash, tokenHash).
+        data: instanceToPlain(data),
         meta: { requestId, timestamp: new Date().toISOString() },
       })),
     );
