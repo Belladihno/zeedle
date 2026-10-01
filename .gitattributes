@@ -1,0 +1,3 @@
+# Force LF line endings everywhere: stops phantom git modifications
+# from Windows CRLF conversion. All tools in this repo write LF.
+* text=auto eol=lf
