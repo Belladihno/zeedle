@@ -1,21 +1,16 @@
 import { Exclude } from 'class-transformer';
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryColumn,
 } from 'typeorm';
-import { uuidv7 } from '../../../common/utils/uuidv7.js';
+import { BaseEntity } from '../../../common/entities/base.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('refresh_tokens')
-export class RefreshToken {
-  @PrimaryColumn('uuid')
-  id: string;
-
+export class RefreshToken extends BaseEntity {
   @Column('uuid')
   userId: string;
 
@@ -35,11 +30,4 @@ export class RefreshToken {
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
-
-  @BeforeInsert()
-  assignId(): void {
-    if (!this.id) {
-      this.id = uuidv7();
-    }
-  }
 }

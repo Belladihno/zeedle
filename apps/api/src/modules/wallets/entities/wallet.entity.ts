@@ -1,24 +1,11 @@
-import {
-  BeforeInsert,
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import { TimestampedEntity } from '../../../common/entities/timestamped.entity.js';
 import { koboTransformer } from '../../../common/utils/kobo.transformer.js';
-import { uuidv7 } from '../../../common/utils/uuidv7.js';
 import type { Transaction } from '../../transactions/entities/transaction.entity.js';
 import type { User } from '../../users/entities/user.entity.js';
 
 @Entity('wallets')
-export class Wallet {
-  @PrimaryColumn('uuid')
-  id: string;
-
+export class Wallet extends TimestampedEntity {
   @Column('uuid', { unique: true })
   userId: string;
 
@@ -35,19 +22,6 @@ export class Wallet {
   @Column({ default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date;
-
   @OneToMany('Transaction', 'wallet')
   transactions: Transaction[];
-
-  @BeforeInsert()
-  assignId(): void {
-    if (!this.id) {
-      this.id = uuidv7();
-    }
-  }
 }

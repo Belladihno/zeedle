@@ -1,16 +1,14 @@
 import { TransactionSource, TransactionStatus, TransactionType } from '@zeedle/shared-types';
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
-  PrimaryColumn,
 } from 'typeorm';
+import { BaseEntity } from '../../../common/entities/base.entity.js';
 import { koboTransformer } from '../../../common/utils/kobo.transformer.js';
-import { uuidv7 } from '../../../common/utils/uuidv7.js';
 import type { Settlement } from '../../settlements/entities/settlement.entity.js';
 import { Wallet } from '../../wallets/entities/wallet.entity.js';
 
@@ -20,10 +18,7 @@ import { Wallet } from '../../wallets/entities/wallet.entity.js';
 @Index(['referenceId'])
 @Index(['createdAt'])
 @Index(['status', 'settlementId'])
-export class Transaction {
-  @PrimaryColumn('uuid')
-  id: string;
-
+export class Transaction extends BaseEntity {
   @Column('uuid')
   walletId: string;
 
@@ -55,10 +50,10 @@ export class Transaction {
   @Column()
   referenceId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   externalReference: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   narration: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -73,11 +68,4 @@ export class Transaction {
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
-
-  @BeforeInsert()
-  assignId(): void {
-    if (!this.id) {
-      this.id = uuidv7();
-    }
-  }
 }

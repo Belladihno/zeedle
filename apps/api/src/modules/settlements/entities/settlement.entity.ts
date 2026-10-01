@@ -1,24 +1,19 @@
 import { SettlementStatus } from '@zeedle/shared-types';
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryColumn,
 } from 'typeorm';
+import { BaseEntity } from '../../../common/entities/base.entity.js';
 import { koboTransformer } from '../../../common/utils/kobo.transformer.js';
-import { uuidv7 } from '../../../common/utils/uuidv7.js';
 import type { Transaction } from '../../transactions/entities/transaction.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('settlements')
-export class Settlement {
-  @PrimaryColumn('uuid')
-  id: string;
-
+export class Settlement extends BaseEntity {
   @Column({ type: 'timestamptz' })
   periodStart: Date;
 
@@ -49,11 +44,4 @@ export class Settlement {
 
   @OneToMany('Transaction', 'settlement')
   transactions: Transaction[];
-
-  @BeforeInsert()
-  assignId(): void {
-    if (!this.id) {
-      this.id = uuidv7();
-    }
-  }
 }

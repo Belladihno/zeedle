@@ -1,13 +1,12 @@
 import type { ValueTransformer } from 'typeorm';
 
 /**
- * node-pg returns BIGINT (int8) as string. Every kobo column uses this
- * transformer so the domain always works with plain numbers.
+ * node-pg returns BIGINT columns as strings. Convert them back to numbers
+ * so balances and amounts are always plain numbers in domain code.
+ * All kobo columns are NOT NULL, so there is nothing else to handle.
  */
 export const koboTransformer: ValueTransformer = {
-  to: (value: number | null | undefined) => value,
-  from: (value: string | number | null) => {
-    if (value === null || value === undefined) return value;
-    return typeof value === 'string' ? Number.parseInt(value, 10) : value;
-  },
+  to: (value: number): number => value,
+  from: (value: string | number): number =>
+    typeof value === 'string' ? parseInt(value, 10) : value,
 };

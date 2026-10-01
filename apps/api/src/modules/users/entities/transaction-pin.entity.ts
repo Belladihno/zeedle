@@ -1,22 +1,10 @@
 import { Exclude } from 'class-transformer';
-import {
-  BeforeInsert,
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { uuidv7 } from '../../../common/utils/uuidv7.js';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { TimestampedEntity } from '../../../common/entities/timestamped.entity.js';
 import { User } from './user.entity.js';
 
 @Entity('transaction_pins')
-export class TransactionPin {
-  @PrimaryColumn('uuid')
-  id: string;
-
+export class TransactionPin extends TimestampedEntity {
   @Column('uuid', { unique: true })
   userId: string;
 
@@ -33,17 +21,4 @@ export class TransactionPin {
 
   @Column({ type: 'timestamptz', nullable: true })
   lockedUntil: Date | null;
-
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date;
-
-  @BeforeInsert()
-  assignId(): void {
-    if (!this.id) {
-      this.id = uuidv7();
-    }
-  }
 }

@@ -41,6 +41,7 @@
     "rxjs": "7.8.2",
     "sanitize-html": "2.18.0",
     "typeorm": "1.1.1",
+    "uuid": "14.0.2",
     "zod": "4.6.5"
   },
   "devDependencies": {

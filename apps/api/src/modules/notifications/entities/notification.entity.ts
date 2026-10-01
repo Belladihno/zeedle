@@ -1,20 +1,15 @@
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryColumn,
 } from 'typeorm';
-import { uuidv7 } from '../../../common/utils/uuidv7.js';
+import { BaseEntity } from '../../../common/entities/base.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('notifications')
-export class Notification {
-  @PrimaryColumn('uuid')
-  id: string;
-
+export class Notification extends BaseEntity {
   @Column('uuid')
   userId: string;
 
@@ -39,11 +34,4 @@ export class Notification {
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
-
-  @BeforeInsert()
-  assignId(): void {
-    if (!this.id) {
-      this.id = uuidv7();
-    }
-  }
 }
