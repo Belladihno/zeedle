@@ -8,7 +8,8 @@ import { RedisModule } from './redis/redis.module.js';
 @Global()
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // .env.development is gitignored local config; absent in production (Render env wins).
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.development' }),
     DatabaseModule,
     RedisModule.forRoot(),
     AppLoggerModule,

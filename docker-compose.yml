@@ -1,0 +1,48 @@
+# Zeedle local infrastructure: Postgres + Redis.
+#
+#   Terminal 1 (infra):  docker compose up
+#   Terminal 2 (api):    pnpm --filter @zeedle/api start:dev
+#   Terminal 3 (web):    pnpm --filter @zeedle/web dev
+#
+# The API reads apps/api/.env.development automatically (gitignored).
+# The web app reads apps/web/.env.local (gitignored).
+# (App containers + render.yaml land with the full Phase 9 pass.)
+
+name: zeedle
+
+services:
+  postgres:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zeedle
+      POSTGRES_PASSWORD: zeedle
+      POSTGRES_DB: zeedle
+    ports:
+      - '5433:5432'
+    volumes:
+      # PG18+ images manage a versioned subdirectory themselves —
+      # mount the parent, not the data dir directly.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U zeedle']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - '6380:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  redisdata:
