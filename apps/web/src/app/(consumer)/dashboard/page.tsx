@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Icon } from '@/components/brand';
+import { Icon, initialsOf } from '@/components/brand';
 import { AppHeader } from '@/components/headers';
 import { TxRow } from '@/components/tx-row';
 import { useRecentTransactions, useTransactionHistory, useWallet } from '@/lib/hooks';
@@ -39,8 +39,9 @@ export default function DashboardPage() {
 
   return (
     <>
-      <AppHeader />
-      <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-4 bg-surface px-4 pb-24 pt-20">
+      <AppHeader initials={user ? initialsOf(`${user.firstName} ${user.lastName}`) : '••'} />
+      <main className="app-column flex min-h-screen flex-1 flex-col bg-surface pb-24 pt-16">
+        <div className="flex w-full flex-col gap-5 px-4 pb-6">
         <section className="flex items-center justify-between pt-2">
           <div className="flex flex-col">
             <h1 className="text-lg font-semibold tracking-tight">
@@ -182,6 +183,7 @@ export default function DashboardPage() {
             256-bit bank-grade encryption • NDPA compliant
           </p>
         </footer>
+        </div>
       </main>
     </>
   );

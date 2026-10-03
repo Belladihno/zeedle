@@ -55,6 +55,23 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Single source of truth for the app column width (Stitch: 480px).
+   Page content uses .app-column; fixed chrome (header/nav) uses .app-fixed
+   because fixed elements ignore parent width — same width, centered. */
+.app-column {
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+.app-fixed {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+}
+
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
   font-weight: normal;

@@ -15,8 +15,8 @@ const ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 z-50 w-full bg-surface/95 shadow-[0_-2px_12px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-      <div className="mx-auto flex h-[60px] max-w-[480px] items-center justify-around px-2">
+    <nav className="app-fixed bottom-0 z-50 bg-surface/95 shadow-[0_-2px_12px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+      <div className="flex h-[60px] items-center justify-around px-2">
         {ITEMS.map((item) => {
           const active = item.match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
           return (

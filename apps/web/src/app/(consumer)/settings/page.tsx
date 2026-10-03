@@ -85,7 +85,7 @@ export default function SettingsPage() {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-4 bg-surface px-4 pb-24 pt-20">
+      <main className="app-column flex min-h-screen flex-col gap-4 bg-surface px-4 pb-24 pt-20">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold tracking-tight">Settings &amp; Security</h1>
@@ -344,7 +344,7 @@ export default function SettingsPage() {
 
       {pinModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4">
-          <div className="flex w-full max-w-[480px] flex-col gap-4 rounded-t-2xl bg-elevated p-5 shadow-xl sm:rounded-2xl">
+          <div className="app-column flex flex-col gap-4 rounded-t-2xl bg-elevated p-5 shadow-xl sm:rounded-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand/10 text-brand">

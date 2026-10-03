@@ -57,7 +57,7 @@ export default function LoginPage() {
   return (
     <>
       <AuthHeader />
-      <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-surface pb-8 pt-14">
+      <main className="app-column flex min-h-screen flex-col bg-surface pb-8 pt-14">
         <div className="flex w-full flex-col gap-4 px-4 py-3">
           <div className="relative w-full">
             <div className="pointer-events-none absolute -top-10 left-1/2 h-20 w-48 -translate-x-1/2 rounded-full bg-brand/10 blur-2xl" />
@@ -194,27 +194,6 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2.5 rounded-lg bg-surface p-2.5 shadow-sm">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-credit/15 text-credit">
-                <Icon name="verified_user" size={16} />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-medium">RS256 JWT</p>
-                <p className="truncate text-[11px] text-text-muted">Vault Signed</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5 rounded-lg bg-surface p-2.5 shadow-sm">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/20 text-brand">
-                <Icon name="speed" size={16} />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-medium">Sliding Window</p>
-                <p className="truncate text-[11px] text-text-muted">5 req / min IP Tier</p>
-              </div>
-            </div>
-          </div>
-
           <div className="space-y-3 pb-4 pt-1 text-center">
             <p className="text-sm text-text-secondary">
               Don&apos;t have a Zeedle account?{' '}
@@ -222,10 +201,6 @@ export default function LoginPage() {
                 Create an account
               </Link>
             </p>
-            <div className="flex items-center justify-center gap-1.5 text-text-muted opacity-80">
-              <Icon name="shield_lock" size={13} />
-              <p className="text-[11px]">Protected by RS256 JWT &amp; sliding-window rate limiting</p>
-            </div>
           </div>
         </div>
       </main>

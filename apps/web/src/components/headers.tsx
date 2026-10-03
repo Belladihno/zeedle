@@ -1,10 +1,10 @@
 import { Icon, Logo } from '@/components/brand';
 
 /** Fixed top bar for authenticated screens: logo, NGN badge, alerts, avatar. */
-export function AppHeader({ hasUnread = false }: { hasUnread?: boolean }) {
+export function AppHeader({ hasUnread = false, initials = '••' }: { hasUnread?: boolean; initials?: string }) {
   return (
-    <header className="fixed top-0 z-50 w-full bg-surface/85 shadow-[0_1px_8px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[480px] items-center justify-between px-4">
+    <header className="app-fixed top-0 z-50 bg-surface/85 shadow-[0_1px_8px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+      <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Logo />
           <span className="ml-1 hidden text-xl font-semibold tracking-tight sm:inline">Zeedle</span>
@@ -26,7 +26,7 @@ export function AppHeader({ hasUnread = false }: { hasUnread?: boolean }) {
           </button>
           <span className="flex h-11 w-11 items-center justify-center">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand/15 text-xs font-semibold text-brand ring-1 ring-border-strong/40">
-              •
+              {initials}
             </span>
           </span>
         </div>
@@ -38,8 +38,8 @@ export function AppHeader({ hasUnread = false }: { hasUnread?: boolean }) {
 /** Fixed top bar for auth screens: back, logo, exit. */
 export function AuthHeader({ onBack }: { onBack?: () => void }) {
   return (
-    <header className="fixed top-0 z-50 w-full bg-surface/85 shadow-[0_1px_8px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-[480px] items-center justify-between px-4">
+    <header className="app-fixed top-0 z-50 bg-surface/85 shadow-[0_1px_8px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+      <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -51,9 +51,7 @@ export function AuthHeader({ onBack }: { onBack?: () => void }) {
           </button>
           <Logo height={26} />
         </div>
-        <span className="flex min-h-[44px] items-center px-3 text-xs font-medium text-text-secondary">
-          Exit
-        </span>
+        <span className="w-11" aria-hidden />
       </div>
     </header>
   );

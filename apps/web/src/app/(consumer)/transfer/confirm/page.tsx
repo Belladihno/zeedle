@@ -77,7 +77,7 @@ export default function TransferConfirmPage() {
 
   if (receipt) {
     return (
-      <main className="mx-auto flex min-h-[70vh] w-full max-w-[480px] flex-col items-center justify-center gap-3 px-4 text-center">
+      <main className="app-column flex min-h-[70vh] flex-col items-center justify-center gap-3 px-4 text-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-credit/10 text-3xl text-credit">
           <Icon name="check_circle" size={32} />
         </span>
@@ -97,7 +97,7 @@ export default function TransferConfirmPage() {
   const complete = pin.length === 4;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-surface px-4 pb-24 pt-20">
+    <main className="app-column flex min-h-screen flex-col bg-surface px-4 pb-24 pt-20">
       <div className="flex items-center justify-between py-2">
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-elevated text-brand">

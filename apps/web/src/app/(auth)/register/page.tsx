@@ -41,7 +41,7 @@ export default function RegisterPage() {
   return (
     <>
       <AuthHeader />
-      <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-surface pb-8 pt-14">
+      <main className="app-column flex min-h-screen flex-col bg-surface pb-8 pt-14">
         <div className="flex w-full flex-col gap-5 px-4 pb-8">
           <div className="pb-4 pt-3">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -111,10 +111,6 @@ export default function RegisterPage() {
                 <label htmlFor="email" className="block text-xs font-medium">
                   Email Address
                 </label>
-                <span className="flex items-center gap-1 text-[11px] text-credit">
-                  <Icon name="check_circle" size={14} />
-                  Available
-                </span>
               </div>
               <div className="relative flex items-center">
                 <span className="pointer-events-none absolute left-3.5 text-text-secondary">

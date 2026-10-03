@@ -88,7 +88,7 @@ export default function TransferPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-4 bg-surface px-4 pb-24 pt-20">
+    <main className="app-column flex min-h-screen flex-col gap-4 bg-surface px-4 pb-24 pt-20">
       <div className="flex items-center justify-between pt-2">
         <button
           type="button"

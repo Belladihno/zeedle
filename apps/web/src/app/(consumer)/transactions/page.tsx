@@ -27,7 +27,7 @@ function DetailSheet({ tx, onClose }: { tx: TransactionDto; onClose: () => void 
         role="dialog"
         aria-modal
         onClick={(e) => e.stopPropagation()}
-        className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[480px] rounded-t-2xl bg-elevated px-4 pb-8 pt-3 shadow-[0_-8px_32px_rgba(0,0,0,0.65)]"
+        className="app-column absolute inset-x-0 bottom-0 rounded-t-2xl bg-elevated px-4 pb-8 pt-3 shadow-[0_-8px_32px_rgba(0,0,0,0.65)]"
       >
         <div className="-mt-1 mb-1 flex items-center justify-center">
           <span className="h-1 w-10 rounded-full bg-[#454654]/60" />
@@ -179,7 +179,7 @@ export default function TransactionsPage() {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-surface px-4 pb-24 pt-20">
+      <main className="app-column flex min-h-screen flex-col bg-surface px-4 pb-24 pt-20">
         <div className="flex flex-col gap-1 pb-3 pt-2">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold">Transaction History</h1>
