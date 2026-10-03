@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import bcrypt from 'bcrypt';
+import { buildAccountNumber } from '@zeedle/shared-types';
 import { DataSource } from 'typeorm';
 import { CoreModule } from './core/core.module.js';
 import { validateEnv } from './core/config/env.validation.js';
@@ -75,7 +76,11 @@ async function bootstrap(): Promise<void> {
     );
 
     const wallet = await wallets.save(
-      wallets.create({ userId: consumer.id, balanceKobo: 500000 }),
+      wallets.create({
+        userId: consumer.id,
+        balanceKobo: 500000,
+        accountNumber: buildAccountNumber('123456789'),
+      }),
     );
 
     const first = await transactions.save(credit(wallet, 200000, 0, 'seed-fund-1'));

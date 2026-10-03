@@ -4,6 +4,7 @@ import { WalletsRepository } from './wallets.repository.js';
 
 export interface WalletView {
   id: string;
+  accountNumber: string;
   balanceKobo: number;
   balanceNaira: string;
   currency: string;
@@ -18,6 +19,7 @@ export class WalletsService {
     const wallet = await this.wallets.findByUserId(userId);
     return {
       id: wallet.id,
+      accountNumber: wallet.accountNumber,
       balanceKobo: wallet.balanceKobo,
       balanceNaira: formatNaira(wallet.balanceKobo),
       currency: wallet.currency,

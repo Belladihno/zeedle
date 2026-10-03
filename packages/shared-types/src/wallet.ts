@@ -8,6 +8,7 @@ export type FundWalletInput = z.infer<typeof FundWalletSchema>;
 export interface WalletDto {
   id: string;
   userId: string;
+  accountNumber: string;
   balanceKobo: number;
   balanceNaira: string;
   currency: string;

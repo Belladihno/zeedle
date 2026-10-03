@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/auth-store';
 
 interface Draft {
   recipientId: string;
+  recipientAccountNumber: string;
   amount: number;
   narration?: string;
   idempotencyKey: string;
@@ -43,7 +44,11 @@ export default function TransferConfirmPage() {
     setError('');
     try {
       const result = await transfer.mutateAsync({ ...draft, pin });
-      saveRecentRecipient({ id: draft.recipientId, name: draft.recipientName });
+      saveRecentRecipient({
+        id: draft.recipientId,
+        name: draft.recipientName,
+        accountNumber: draft.recipientAccountNumber,
+      });
       setReceipt({ referenceId: result.referenceId });
       sessionStorage.removeItem('zeedle-transfer-draft');
     } catch (err) {
@@ -59,7 +64,7 @@ export default function TransferConfirmPage() {
   async function copyId() {
     if (!draft) return;
     try {
-      await navigator.clipboard.writeText(draft.recipientId);
+      await navigator.clipboard.writeText(draft.recipientAccountNumber);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -85,6 +90,8 @@ export default function TransferConfirmPage() {
         <p className="tabular text-3xl font-bold">
           ₦{draft.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
         </p>
+        <p className="text-sm font-medium">to {draft.recipientName}</p>
+        <p className="tabular text-xs text-text-secondary">{draft.recipientAccountNumber}</p>
         <p className="max-w-full truncate font-mono text-[11px] text-text-muted">{receipt.referenceId}</p>
         <button type="button" onClick={() => router.replace('/dashboard')} className="btn-primary mt-2">
           Back to Dashboard
@@ -125,10 +132,11 @@ export default function TransferConfirmPage() {
               .toUpperCase()}
           </div>
           <div>
-            <p className="text-sm font-semibold">{draft.recipientName}</p>
-            <p className="font-mono text-[11px] text-text-secondary">
-              zeedle.me/@{draft.recipientName.split(' ')[0]?.toLowerCase()}
+            <p className="text-[11px] uppercase tracking-wider text-text-secondary">
+              You&apos;re sending to
             </p>
+            <p className="text-sm font-semibold">{draft.recipientName}</p>
+            <p className="tabular text-[11px] text-text-secondary">{draft.recipientAccountNumber}</p>
           </div>
         </div>
         <span className="text-xs font-medium text-credit">Pending PIN</span>
@@ -163,15 +171,15 @@ export default function TransferConfirmPage() {
             <div className="h-px w-full bg-[#35343a]" />
             <div className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-text-secondary">Recipient ID</span>
+                <span className="text-sm text-text-secondary">Recipient acct</span>
                 <button
                   type="button"
                   onClick={copyId}
-                  title="Copy Recipient ID"
+                  title="Copy recipient account number"
                   className="flex items-center gap-1.5 rounded bg-hover px-2 py-0.5 transition-all hover:bg-[#35343a] active:scale-95"
                 >
-                  <span className="max-w-[170px] truncate font-mono text-[11px] text-text-secondary">
-                    {draft.recipientId.slice(0, 8)}...{draft.recipientId.slice(-3)}
+                  <span className="tabular text-[11px] font-semibold tracking-wider text-text-secondary">
+                    {draft.recipientAccountNumber}
                   </span>
                   <span className="text-brand">
                     <Icon name={copied ? 'check' : 'content_copy'} size={13} />

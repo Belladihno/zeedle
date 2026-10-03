@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { isValidAccountNumber } from '@zeedle/shared-types';
 import { hashSecret } from '../../infrastructure/encryption/bcrypt.helper.js';
 import { UsersRepository } from './users.repository.js';
 
@@ -24,6 +26,17 @@ export class UsersService {
       throw new NotFoundException('Recipient not found');
     }
     return user;
+  }
+
+  async resolveByAccountNumber(accountNumber: string): Promise<unknown> {
+    if (!isValidAccountNumber(accountNumber)) {
+      throw new BadRequestException('Invalid Zeedle account number');
+    }
+    const recipient = await this.users.findPublicByAccountNumber(accountNumber);
+    if (!recipient) {
+      throw new NotFoundException('Recipient not found');
+    }
+    return recipient;
   }
 
   updateProfile(

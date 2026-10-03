@@ -8,8 +8,13 @@ const WINDOW_MS = 60_000;
 const TIERS = {
   auth: 5,
   payments: 10,
+  // Recipient lookup is enumeration-sensitive: strict enough to stop
+  // scripted harvesting, loose enough for genuine typo retries.
+  resolve: 20,
   general: 100,
 } as const;
+
+type Tier = keyof typeof TIERS;
 
 interface LocalBucket {
   count: number;
@@ -33,7 +38,7 @@ interface ResponseLike {
  */
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private readonly upstash: Ratelimit[] | null;
+  private readonly upstash: Record<Tier, Ratelimit> | null;
   private readonly buckets = new Map<string, LocalBucket>();
 
   constructor(config: ConfigService) {
@@ -43,11 +48,14 @@ export class RateLimitGuard implements CanActivate {
         token: config.getOrThrow<string>('UPSTASH_REDIS_REST_TOKEN'),
       });
       const window = '60 s';
-      this.upstash = [
-        new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(TIERS.auth, window) }),
-        new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(TIERS.payments, window) }),
-        new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(TIERS.general, window) }),
-      ];
+      const limiter = (limit: number): Ratelimit =>
+        new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(limit, window) });
+      this.upstash = {
+        auth: limiter(TIERS.auth),
+        payments: limiter(TIERS.payments),
+        resolve: limiter(TIERS.resolve),
+        general: limiter(TIERS.general),
+      };
     } else {
       this.upstash = null;
     }
@@ -58,13 +66,18 @@ export class RateLimitGuard implements CanActivate {
     const req = ctx.getRequest<RequestLike>();
     const res = ctx.getResponse<ResponseLike>();
     const path = req.url.split('?')[0];
-    const tier = path.startsWith('/auth/') ? 'auth' : path.startsWith('/payments/') ? 'payments' : 'general';
+    const tier: Tier = path.startsWith('/auth/')
+      ? 'auth'
+      : path.startsWith('/payments/')
+        ? 'payments'
+        : path.includes('/resolve')
+          ? 'resolve'
+          : 'general';
     const identity = `${req.ip ?? 'unknown'}:${req.user?.sub ?? 'anon'}`;
     const key = `ratelimit:${tier}:${identity}`;
 
     if (this.upstash) {
-      const limiter = this.upstash[tier === 'auth' ? 0 : tier === 'payments' ? 1 : 2];
-      const { success, reset } = await limiter.limit(key);
+      const { success, reset } = await this.upstash[tier].limit(key);
       if (!success) {
         const retryAfter = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
         res.header('Retry-After', retryAfter);

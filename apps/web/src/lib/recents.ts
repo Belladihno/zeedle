@@ -1,6 +1,7 @@
 export interface RecentRecipient {
   id: string;
   name: string;
+  accountNumber?: string;
 }
 
 const KEY = 'zeedle-recent-recipients';

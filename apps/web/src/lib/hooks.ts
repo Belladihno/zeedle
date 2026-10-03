@@ -4,6 +4,7 @@ import type {
   UserDto,
   WalletDto,
 } from '@zeedle/shared-types';
+import { isValidAccountNumber } from '@zeedle/shared-types';
 import { useState } from 'react';
 import { apiDelete, apiGet, apiPatch, apiPost } from '@/lib/api';
 
@@ -54,15 +55,56 @@ export function useNotifications() {
   });
 }
 
+export interface ResolvedRecipient {
+  found: boolean;
+  name: string;
+  userId?: string;
+  accountNumber?: string;
+}
+
 export function useResolveRecipient() {
-  const [result, setResult] = useState<{ found: boolean; name: string } | null>(null);
+  const [result, setResult] = useState<ResolvedRecipient | null>(null);
   const [checking, setChecking] = useState(false);
 
   async function resolve(id: string): Promise<boolean> {
     setChecking(true);
     try {
       const user = await apiGet<UserDto>(`users/resolve/${id}`);
-      setResult({ found: true, name: `${user.firstName} ${user.lastName}` });
+      setResult({ found: true, name: `${user.firstName} ${user.lastName}`, userId: user.id });
+      return true;
+    } catch {
+      setResult({ found: false, name: '' });
+      return false;
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  /**
+   * Resolves a 10-digit Zeedle account number to a named recipient.
+   * Returns 'invalid' for typos caught locally (no network call),
+   * false when the number is well-formed but unknown.
+   */
+  async function resolveByAccountNumber(accountNumber: string): Promise<boolean | 'invalid'> {
+    const digits = accountNumber.replace(/\D/g, '');
+    if (!isValidAccountNumber(digits)) {
+      setResult(null);
+      return 'invalid';
+    }
+    setChecking(true);
+    try {
+      const recipient = await apiGet<{
+        id: string;
+        firstName: string;
+        lastName: string;
+        accountNumber: string;
+      }>(`users/resolve?accountNumber=${digits}`);
+      setResult({
+        found: true,
+        name: `${recipient.firstName} ${recipient.lastName}`,
+        userId: recipient.id,
+        accountNumber: recipient.accountNumber,
+      });
       return true;
     } catch {
       setResult({ found: false, name: '' });
@@ -76,7 +118,7 @@ export function useResolveRecipient() {
     setResult(null);
   }
 
-  return { result, checking, resolve, reset };
+  return { result, checking, resolve, resolveByAccountNumber, reset };
 }
 
 export function newIdempotencyKey(): string {

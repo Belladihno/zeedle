@@ -6,6 +6,9 @@ import type { User } from '../../users/entities/user.entity.js';
 
 @Entity('wallets')
 export class Wallet extends TimestampedEntity {
+  @Column({ type: 'char', length: 10, unique: true })
+  accountNumber: string;
+
   @Column('uuid', { unique: true })
   userId: string;
 

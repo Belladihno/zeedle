@@ -8,6 +8,7 @@ import { TransactionPin } from '../../modules/users/entities/transaction-pin.ent
 import { User } from '../../modules/users/entities/user.entity.js';
 import { Wallet } from '../../modules/wallets/entities/wallet.entity.js';
 import { AddTransactionIndexes1790812800001 } from '../../migrations/1790812800001-AddTransactionIndexes.js';
+import { AddWalletAccountNumber1790966400002 } from '../../migrations/1790966400002-AddWalletAccountNumber.js';
 import { CreateCoreTables1790812800000 } from '../../migrations/1790812800000-CreateCoreTables.js';
 
 export function buildTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {
@@ -18,7 +19,11 @@ export function buildTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions
     url,
     synchronize: false,
     entities: [User, Wallet, Transaction, TransactionPin, Settlement, Notification, RefreshToken],
-    migrations: [CreateCoreTables1790812800000, AddTransactionIndexes1790812800001],
+    migrations: [
+      CreateCoreTables1790812800000,
+      AddTransactionIndexes1790812800001,
+      AddWalletAccountNumber1790966400002,
+    ],
     migrationsRun: true,
     ...(useSsl ? { ssl: { rejectUnauthorized: false as const } } : {}),
     extra: {

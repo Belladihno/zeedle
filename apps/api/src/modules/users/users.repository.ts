@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
 import { compareSecret } from '../../infrastructure/encryption/bcrypt.helper.js';
 import { RefreshToken } from '../auth/entities/refresh-token.entity.js';
+import { Wallet } from '../wallets/entities/wallet.entity.js';
 import { TransactionPin } from './entities/transaction-pin.entity.js';
 import { User } from './entities/user.entity.js';
 
@@ -31,6 +32,29 @@ export class UsersRepository {
       where: { id, isActive: true, isDeleted: false },
       select: { id: true, firstName: true, lastName: true },
     });
+  }
+
+  /**
+   * Public profile looked up by 10-digit Zeedle account number.
+   * Inactive, deleted, or deactivated-wallet accounts resolve as not found —
+   * the caller must not reveal why.
+   */
+  async findPublicByAccountNumber(
+    accountNumber: string,
+  ): Promise<{ id: string; firstName: string; lastName: string; accountNumber: string } | null> {
+    const wallet = await this.db
+      .getRepository(Wallet)
+      .findOne({ where: { accountNumber }, relations: { user: true } });
+    const user = wallet?.user;
+    if (!wallet?.isActive || !user || !user.isActive || user.isDeleted) {
+      return null;
+    }
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      accountNumber: wallet.accountNumber,
+    };
   }
 
   async updateProfile(

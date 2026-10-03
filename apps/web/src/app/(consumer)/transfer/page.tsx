@@ -11,8 +11,8 @@ const QUICK = [2000, 5000, 10000];
 export default function TransferPage() {
   const router = useRouter();
   const wallet = useWallet();
-  const { result, checking, resolve, reset } = useResolveRecipient();
-  const [recipientId, setRecipientId] = useState('');
+  const { result, checking, resolveByAccountNumber, reset } = useResolveRecipient();
+  const [recipientNumber, setRecipientNumber] = useState('');
   const [recipientError, setRecipientError] = useState('');
   const [amountText, setAmountText] = useState('');
   const [narration, setNarration] = useState('');
@@ -24,26 +24,30 @@ export default function TransferPage() {
   const amount = Number(amountText.replace(/,/g, ''));
   const balanceNaira = wallet.data ? Math.floor(wallet.data.balanceKobo / 100) : 0;
 
-  async function checkRecipient(id: string) {
+  async function checkRecipient(raw: string) {
     setRecipientError('');
-    if (!id) {
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) {
       reset();
       return;
     }
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim())) {
+    const outcome = await resolveByAccountNumber(digits);
+    if (outcome === 'invalid') {
+      setRecipientError("That number doesn't look right — check for typos and try again.");
+    } else if (!outcome) {
+      setRecipientError('No Zeedle account with this number. Transfers to unknown accounts are rejected.');
+    } else if (digits === wallet.data?.accountNumber) {
       reset();
-      return;
+      setRecipientError("That's your own number — you can't send to yourself.");
     }
-    const ok = await resolve(id.trim());
-    if (!ok) setRecipientError('Recipient not found. Transfers to unknown IDs are rejected.');
   }
 
   async function paste() {
     try {
       const text = await navigator.clipboard.readText();
       if (text) {
-        setRecipientId(text.trim());
-        await checkRecipient(text.trim());
+        setRecipientNumber(text.replace(/\D/g, '').slice(0, 10));
+        await checkRecipient(text);
       }
     } catch {
       // Clipboard blocked — user types manually.
@@ -62,11 +66,11 @@ export default function TransferPage() {
 
   function submit() {
     setFormError('');
-    if (!recipientId.trim()) {
-      setFormError('Enter a recipient ID.');
+    if (!recipientNumber.replace(/\D/g, '')) {
+      setFormError('Enter a recipient account number.');
       return;
     }
-    if (!result?.found) {
+    if (!result?.found || !result.userId || !result.accountNumber) {
       setFormError('Resolve a valid recipient first.');
       return;
     }
@@ -77,7 +81,8 @@ export default function TransferPage() {
     sessionStorage.setItem(
       'zeedle-transfer-draft',
       JSON.stringify({
-        recipientId: recipientId.trim(),
+        recipientId: result.userId,
+        recipientAccountNumber: result.accountNumber,
         amount,
         narration: narration.trim() || undefined,
         idempotencyKey: newIdempotencyKey(),
@@ -132,8 +137,8 @@ export default function TransferPage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="recipient" className="flex items-center gap-1.5 text-xs font-medium">
-            <span>Recipient User ID (UUID)</span>
-            <span className="text-text-secondary" title="Direct 128-bit cryptographic identifier required for instant settlement">
+            <span>Recipient Zeedle account number</span>
+            <span className="text-text-secondary" title="10-digit Zeedle account number — found on the recipient's dashboard">
               <Icon name="info" size={16} />
             </span>
           </label>
@@ -150,14 +155,16 @@ export default function TransferPage() {
           <input
             id="recipient"
             spellCheck={false}
-            placeholder="e.g. 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
-            value={recipientId}
+            inputMode="numeric"
+            maxLength={10}
+            placeholder="e.g. 0123456789"
+            value={recipientNumber}
             onChange={(e) => {
-              setRecipientId(e.target.value);
+              setRecipientNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
               setRecipientError('');
             }}
             onBlur={(e) => void checkRecipient(e.target.value)}
-            className="tabular h-12 w-full rounded-lg bg-[#0e0e13] px-4 font-mono text-[13px] tracking-tight shadow-inner focus:bg-[#1b1b20] focus:outline-none"
+            className="tabular h-12 w-full rounded-lg bg-[#0e0e13] px-4 text-[15px] font-semibold tracking-[0.2em] shadow-inner focus:bg-[#1b1b20] focus:outline-none"
           />
           <button
             type="button"
@@ -178,7 +185,7 @@ export default function TransferPage() {
             <span className="shrink-0 text-brand">
               <Icon name="shield" size={14} />
             </span>
-            Enter the recipient&apos;s 36-character Zeedle account UUID. Self-transfers are rejected.
+            Enter the recipient&apos;s 10-digit Zeedle account number. Self-transfers are rejected.
           </p>
         )}
 
@@ -193,8 +200,10 @@ export default function TransferPage() {
                   key={recent.id}
                   type="button"
                   onClick={() => {
-                    setRecipientId(recent.id);
-                    void checkRecipient(recent.id);
+                    if (recent.accountNumber) {
+                      setRecipientNumber(recent.accountNumber);
+                      void checkRecipient(recent.accountNumber);
+                    }
                   }}
                   className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#1f1f25] px-3 py-1.5 text-left transition-colors hover:bg-hover"
                 >
@@ -203,7 +212,9 @@ export default function TransferPage() {
                   </span>
                   <span className="flex flex-col">
                     <span className="text-xs font-medium leading-none">{recent.name.split(' ')[0]}</span>
-                    <span className="font-mono text-[11px] text-text-secondary">..{recent.id.slice(-6)}</span>
+                    <span className="tabular text-[11px] text-text-secondary">
+                      {recent.accountNumber ? `••${recent.accountNumber.slice(-4)}` : ''}
+                    </span>
                   </span>
                 </button>
               ))}

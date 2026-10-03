@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { WalletsRepository } from '../wallets/wallets.repository.js';
 import { RefreshToken } from './entities/refresh-token.entity.js';
 import { User } from '../users/entities/user.entity.js';
 import { Wallet } from '../wallets/entities/wallet.entity.js';
@@ -15,12 +16,15 @@ export interface NewAccount {
 
 @Injectable()
 export class AuthRepository {
-  constructor(private readonly db: DataSource) {}
+  constructor(
+    private readonly db: DataSource,
+    private readonly wallets: WalletsRepository,
+  ) {}
 
   findUserByEmail(email: string): Promise<User | null> {
     return this.db.getRepository(User).findOneBy({ email });
   }
-
+  
   findUserById(id: string): Promise<User | null> {
     return this.db.getRepository(User).findOneBy({ id });
   }
@@ -33,9 +37,7 @@ export class AuthRepository {
       const user = await queryRunner.manager.save(
         queryRunner.manager.create(User, { ...data, role: 'USER' as const }),
       );
-      const wallet = await queryRunner.manager.save(
-        queryRunner.manager.create(Wallet, { userId: user.id, balanceKobo: 0 }),
-      );
+      const wallet = await this.wallets.createForUser(queryRunner, user.id);
       await queryRunner.commitTransaction();
       return { user, wallet };
     } catch (error) {

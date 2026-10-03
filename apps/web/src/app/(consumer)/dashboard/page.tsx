@@ -18,6 +18,7 @@ function greeting(): string {
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const [hidden, setHidden] = useState(false);
+  const [copied, setCopied] = useState(false);
   const wallet = useWallet();
   const recent = useRecentTransactions();
 
@@ -89,6 +90,30 @@ export default function DashboardPage() {
                 <Icon name="verified_user" size={15} />
                 <span className="text-[11px] font-medium">Tier 2 Verified Account</span>
               </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const number = wallet.data?.accountNumber;
+                  if (!number) return;
+                  void navigator.clipboard
+                    ?.writeText(number)
+                    .then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1800);
+                    })
+                    .catch(() => undefined);
+                }}
+                title="Copy Zeedle account number"
+                className="tabular flex items-center gap-1.5 self-start rounded-lg bg-elevated px-2.5 py-1.5 text-left transition-colors hover:bg-hover active:scale-[0.98]"
+              >
+                <span className="text-[11px] text-text-secondary">Zeedle acct</span>
+                <span className="text-[13px] font-semibold tracking-wider">
+                  {wallet.data ? wallet.data.accountNumber : '…………'}
+                </span>
+                <span className="text-brand">
+                  <Icon name={copied ? 'check' : 'content_copy'} size={14} />
+                </span>
+              </button>
             </div>
             <div className="flex flex-col gap-2.5 pt-1">
               <Link
