@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   TransactionDto,
+  TransactionSummaryDto,
   UserDto,
   WalletDto,
 } from '@zeedle/shared-types';
@@ -32,8 +33,7 @@ export function useRecentTransactions() {
   });
 }
 
-export function useTransactionHistory(filters: Record<string, string | number>) {
-  return useQuery({
+export function useTransactionHistory(filters: Record<string, string | number>) {  return useQuery({
     queryKey: ['transactions', filters],
     queryFn: () => {
       const params = new URLSearchParams(
@@ -43,6 +43,15 @@ export function useTransactionHistory(filters: Record<string, string | number>) 
     },
     staleTime: 120_000,
     placeholderData: (previous) => previous,
+  });
+}
+
+/** Monthly inflow/outflow totals — one light query, no history paging. */
+export function useTransactionSummary(month: string) {
+  return useQuery({
+    queryKey: ['transactions', 'summary', month],
+    queryFn: () => apiGet<TransactionSummaryDto>(`transactions/summary?month=${month}`),
+    staleTime: 60_000,
   });
 }
 

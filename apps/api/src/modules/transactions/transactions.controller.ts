@@ -2,6 +2,7 @@ import { Controller, Get, Param, ParseUUIDPipe, Query, UseGuards } from '@nestjs
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TransactionQueryDto } from './dto/transaction-query.dto.js';
+import { TransactionSummaryQueryDto } from './dto/transaction-summary-query.dto.js';
 import { TransactionsService } from './transactions.service.js';
 
 @Controller('transactions')
@@ -15,6 +16,14 @@ export class TransactionsController {
     @Query() query: TransactionQueryDto,
   ): Promise<unknown> {
     return this.transactions.history(userId, query);
+  }
+
+  @Get('summary')
+  summary(
+    @CurrentUser('sub') userId: string,
+    @Query() query: TransactionSummaryQueryDto,
+  ): Promise<unknown> {
+    return this.transactions.summary(userId, query.month);
   }
 
   @Get(':id')

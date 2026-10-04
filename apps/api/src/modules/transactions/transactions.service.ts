@@ -22,4 +22,16 @@ export class TransactionsService {
     const wallet = await this.wallets.findByUserId(userId);
     return this.transactions.findByIdForWallet(wallet.id, id);
   }
+
+  async summary(
+    userId: string,
+    month?: string,
+  ): Promise<{ month: string } & Awaited<ReturnType<TransactionsRepository['summarize']>>> {
+    const wallet = await this.wallets.findByUserId(userId);
+    const label = month ?? new Date().toISOString().slice(0, 7);
+    const [year, mon] = label.split('-').map(Number);
+    const from = new Date(Date.UTC(year, mon - 1, 1));
+    const to = new Date(Date.UTC(year, mon, 1));
+    return { month: label, ...(await this.transactions.summarize(wallet.id, from, to)) };
+  }
 }

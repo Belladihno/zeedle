@@ -11,6 +11,13 @@ export interface TransactionFilter {
   limit: number;
 }
 
+export interface MonthSummary {
+  inflowKobo: number;
+  outflowKobo: number;
+  inflowCount: number;
+  outflowCount: number;
+}
+
 /** Read-only history — writes happen in payments and transfers. */
 @Injectable()
 export class TransactionsRepository {
@@ -46,5 +53,35 @@ export class TransactionsRepository {
       throw new NotFoundException('Transaction not found');
     }
     return tx;
+  }
+
+  /**
+   * Monthly inflow/outflow totals over settled transactions.
+   * One grouped query — the dashboard must not page through history to sum two numbers.
+   */
+  async summarize(walletId: string, from: Date, to: Date): Promise<MonthSummary> {
+    const rows = await this.db
+      .getRepository(Transaction)
+      .createQueryBuilder('tx')
+      .select('tx.type', 'type')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('COALESCE(SUM(tx.amount), 0)', 'total')
+      .where('tx.walletId = :walletId', { walletId })
+      .andWhere('tx.status = :status', { status: 'SUCCESS' })
+      .andWhere('tx.createdAt >= :from', { from })
+      .andWhere('tx.createdAt < :to', { to })
+      .groupBy('tx.type')
+      .getRawMany<{ type: string; count: string; total: string }>();
+    const summary: MonthSummary = { inflowKobo: 0, outflowKobo: 0, inflowCount: 0, outflowCount: 0 };
+    for (const row of rows) {
+      if (row.type === 'CREDIT') {
+        summary.inflowKobo = Number(row.total);
+        summary.inflowCount = Number(row.count);
+      } else if (row.type === 'DEBIT') {
+        summary.outflowKobo = Number(row.total);
+        summary.outflowCount = Number(row.count);
+      }
+    }
+    return summary;
   }
 }

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Icon, initialsOf } from '@/components/brand';
 import { AppHeader } from '@/components/headers';
 import { TxRow } from '@/components/tx-row';
-import { useRecentTransactions, useTransactionHistory, useWallet } from '@/lib/hooks';
+import { useRecentTransactions, useTransactionSummary, useWallet } from '@/lib/hooks';
 import { useAuthStore } from '@/stores/auth-store';
 
 function greeting(): string {
@@ -24,17 +24,15 @@ export default function DashboardPage() {
 
   const firstName = user?.firstName ?? 'there';
   const balance = wallet.data?.balanceNaira ?? '₦0.00';
-  const monthLabel = new Date().toLocaleString('en-NG', { month: 'short' });
+  const now = new Date();
+  const monthLabel = now.toLocaleString('en-NG', { month: 'short' });
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  const ledger = useTransactionHistory({ page: 1, limit: 100 });
-  const credits = (ledger.data?.items ?? []).filter(
-    (tx) => tx.type === 'CREDIT' && tx.status === 'SUCCESS',
-  );
-  const debits = (ledger.data?.items ?? []).filter(
-    (tx) => tx.type === 'DEBIT' && tx.status === 'SUCCESS',
-  );
-  const inflowKobo = credits.reduce((sum, tx) => sum + tx.amount, 0);
-  const outflowKobo = debits.reduce((sum, tx) => sum + tx.amount, 0);
+  const summary = useTransactionSummary(monthKey);
+  const inflowKobo = summary.data?.inflowKobo ?? 0;
+  const outflowKobo = summary.data?.outflowKobo ?? 0;
+  const inflowCount = summary.data?.inflowCount ?? 0;
+  const outflowCount = summary.data?.outflowCount ?? 0;
   const naira = (kobo: number) =>
     `₦${(kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
 
@@ -145,7 +143,7 @@ export default function DashboardPage() {
             <div>
               <div className="tabular text-[15px] font-semibold text-credit">+{naira(inflowKobo)}</div>
               <span className="text-[11px] text-text-secondary/80">
-                {credits.length} deposit{credits.length === 1 ? '' : 's'} cleared
+                {inflowCount} deposit{inflowCount === 1 ? '' : 's'} cleared
               </span>
             </div>
           </div>
@@ -159,7 +157,7 @@ export default function DashboardPage() {
             <div>
               <div className="tabular text-[15px] font-semibold text-debit">-{naira(outflowKobo)}</div>
               <span className="text-[11px] text-text-secondary/80">
-                {debits.length} transfer{debits.length === 1 ? '' : 's'} routed
+                {outflowCount} transfer{outflowCount === 1 ? '' : 's'} routed
               </span>
             </div>
           </div>

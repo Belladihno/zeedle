@@ -33,6 +33,22 @@ export const TransactionQuerySchema = z.object({
 });
 export type TransactionQuery = z.infer<typeof TransactionQuerySchema>;
 
+export const TransactionSummaryQuerySchema = z.object({
+  month: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Month must be YYYY-MM')
+    .optional(),
+});
+export type TransactionSummaryQuery = z.infer<typeof TransactionSummaryQuerySchema>;
+
+export interface TransactionSummaryDto {
+  month: string;
+  inflowKobo: number;
+  outflowKobo: number;
+  inflowCount: number;
+  outflowCount: number;
+}
+
 export const RunSettlementSchema = z.object({
   periodStart: z.iso.datetime(),
   periodEnd: z.iso.datetime(),
