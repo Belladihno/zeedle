@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Icon } from '@/components/brand';
 import { AppHeader } from '@/components/headers';
-import { apiDelete, apiPatch, apiPost, problemDetail } from '@/lib/api';
+import { apiAuthPost, apiDelete, apiPatch, apiPost, problemDetail } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function SettingsPage() {
@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
   async function logout() {
     try {
-      await apiPost('auth/logout', {});
+      await apiAuthPost('logout', {});
     } catch {
       // Session already invalid — still clear local state.
     }

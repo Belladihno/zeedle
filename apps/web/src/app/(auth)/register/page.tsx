@@ -8,7 +8,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { RegisterSchema, type RegisterInput, type UserDto } from '@zeedle/shared-types';
 import { Icon } from '@/components/brand';
 import { AuthHeader } from '@/components/headers';
-import { apiPost, problemDetail } from '@/lib/api';
+import { apiAuthPost, problemDetail } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function RegisterPage() {
@@ -28,7 +28,7 @@ export default function RegisterPage() {
   async function onSubmit(values: RegisterInput) {
     setServerError('');
     try {
-      const data = await apiPost<{ user: UserDto; accessToken: string }>('auth/register', values);
+      const data = await apiAuthPost<{ user: UserDto; accessToken: string }>('register', values);
       setAuth(data.user, data.accessToken);
       router.replace('/dashboard');
     } catch (error) {

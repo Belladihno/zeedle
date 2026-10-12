@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LoginSchema, type UserDto } from '@zeedle/shared-types';
 import { Icon, Logo } from '@/components/brand';
-import { apiPost, problemDetail } from '@/lib/api';
+import { apiAuthPost, problemDetail } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 
 type Phase = 'idle' | 'validating' | 'asserting' | 'granted' | 'locked';
@@ -43,8 +43,8 @@ export default function AdminLoginPage() {
     }
     try {
       setPhase('validating');
-      const data = await apiPost<{ user: UserDto; accessToken: string }>(
-        'auth/login',
+      const data = await apiAuthPost<{ user: UserDto; accessToken: string }>(
+        'login',
         parsed.data,
       );
       setAuth(data.user, data.accessToken);

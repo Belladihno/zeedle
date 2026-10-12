@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { LoginSchema, type LoginInput, type UserDto } from '@zeedle/shared-types';
 import { Icon } from '@/components/brand';
 import { AuthHeader } from '@/components/headers';
-import { apiPost, problemDetail } from '@/lib/api';
+import { apiAuthPost, problemDetail } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function LoginPage() {
@@ -26,7 +26,10 @@ export default function LoginPage() {
   async function onSubmit(values: LoginInput) {
     setServerError('');
     try {
-      const data = await apiPost<{ user: UserDto; accessToken: string }>('auth/login', values);
+      const data = await apiAuthPost<{
+        user: UserDto;
+        accessToken: string;
+      }>('login', values);
       setAuth(data.user, data.accessToken);
       router.replace('/dashboard');
     } catch (error) {

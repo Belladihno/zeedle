@@ -5,8 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 async function refreshAccessToken(): Promise<string | null> {
   try {
-    const res = await ky.post(`${API_URL}/auth/refresh`, {
-      credentials: 'include',
+    const res = await ky.post('/api/auth/refresh', {
       headers: { 'Content-Type': 'application/json' },
       body: '{}',
     });
@@ -15,6 +14,13 @@ async function refreshAccessToken(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/** Same-origin auth call through the /api/auth bridge (first-party cookie). */
+export async function apiAuthPost<T>(path: string, body: unknown): Promise<T> {
+  const res = await ky.post(`/api/auth/${path}`, { json: body });
+  const json = (await res.json()) as Envelope<T>;
+  return json.data;
 }
 
 export const api = ky.create({
