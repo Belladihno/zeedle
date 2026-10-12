@@ -1,3 +1,4 @@
+import { createPrivateKey, createPublicKey } from 'node:crypto';
 import { z } from 'zod';
 
 const baseSchema = z.object({
@@ -35,6 +36,18 @@ export function validateEnv(source: NodeJS.ProcessEnv = process.env): Env {
     process.exit(1);
   }
   const env = parsed.data;
+  // RS256 needs real asymmetric keys — a mangled PEM (e.g. literal \n on Render)
+  // would otherwise boot fine and 500 every login/register after persisting rows.
+  try {
+    createPrivateKey(env.JWT_PRIVATE_KEY);
+    createPublicKey(env.JWT_PUBLIC_KEY);
+  } catch {
+    console.error('Environment validation failed:');
+    console.error(
+      ' - JWT_PRIVATE_KEY / JWT_PUBLIC_KEY are not valid PEM keys (check for real newlines)',
+    );
+    process.exit(1);
+  }
   if (
     env.NODE_ENV === 'production' &&
     (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN)

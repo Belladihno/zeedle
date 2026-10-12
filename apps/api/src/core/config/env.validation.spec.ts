@@ -1,12 +1,19 @@
+import { generateKeyPairSync } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { validateEnv } from './env.validation.js';
+
+const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+  privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+});
 
 const validEnv = {
   NODE_ENV: 'development',
   PORT: '3000',
   DATABASE_URL: 'postgresql://zeedle:password@localhost:5432/zeedle',
-  JWT_PRIVATE_KEY: 'a'.repeat(40),
-  JWT_PUBLIC_KEY: 'b'.repeat(40),
+  JWT_PRIVATE_KEY: privateKey,
+  JWT_PUBLIC_KEY: publicKey,
   PAYSTACK_SECRET: 'sk_test_abc123',
 };
 
@@ -39,6 +46,13 @@ describe('validateEnv', () => {
   it('rejects a Paystack secret without the sk_ prefix', () => {
     mockExit();
     expect(() => validateEnv({ ...validEnv, PAYSTACK_SECRET: 'pk_test_abc' })).toThrow('exit:1');
+  });
+
+  it('rejects mangled JWT keys that cannot parse as PEM', () => {
+    mockExit();
+    expect(() =>
+      validateEnv({ ...validEnv, JWT_PRIVATE_KEY: 'a'.repeat(40) }),
+    ).toThrow('exit:1');
   });
 
   it('requires Upstash credentials in production', () => {

@@ -28,9 +28,13 @@ export class AuthRepository {
   findUserById(id: string): Promise<User | null> {
     return this.db.getRepository(User).findOneBy({ id });
   }
+
+  /** Removes a just-created account. Wallet cascades. Only for post-commit compensation. */
+  async deleteUser(id: string): Promise<void> {
+    await this.db.getRepository(User).delete({ id });
+  }
   
-  async createUserAndWallet(data: NewAccount): Promise<{ user: User; wallet: Wallet }> {
-    const queryRunner = this.db.createQueryRunner();
+  async createUserAndWallet(data: NewAccount): Promise<{ user: User; wallet: Wallet }> {    const queryRunner = this.db.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
@@ -48,8 +52,7 @@ export class AuthRepository {
     }
   }
 
-  storeRefreshToken(userId: string, tokenHash: string, expiresAt: Date): Promise<RefreshToken> {
-    const repo = this.db.getRepository(RefreshToken);
+  storeRefreshToken(userId: string, tokenHash: string, expiresAt: Date): Promise<RefreshToken> {    const repo = this.db.getRepository(RefreshToken);
     return repo.save(repo.create({ userId, tokenHash, expiresAt }));
   }
 

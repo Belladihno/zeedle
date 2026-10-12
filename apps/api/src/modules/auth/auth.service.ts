@@ -42,8 +42,15 @@ export class AuthService {
       ...dto,
       passwordHash: await hashSecret(dto.password),
     });
-    const pair = await this.issueTokenPair(user);
-    return { user, ...pair };
+    try {
+      const pair = await this.issueTokenPair(user);
+      return { user, ...pair };
+    } catch (error) {
+      // Token minting failed after the account committed — remove the orphan
+      // so the user can retry instead of hitting 409 on a dead account.
+      await this.auth.deleteUser(user.id).catch(() => undefined);
+      throw error;
+    }
   }
 
   async login(dto: LoginDto): Promise<{ user: User } & TokenPair> {
