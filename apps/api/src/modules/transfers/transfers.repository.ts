@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
 import { Transaction } from '../transactions/entities/transaction.entity.js';
@@ -34,6 +34,10 @@ export class TransfersRepository {
     });
     if (!sender || !recipient) {
       throw new BadRequestException('Wallet not found');
+    }
+    // Re-checked under the row lock: a freeze landing mid-transfer must not slip through.
+    if (!sender.isActive || !recipient.isActive) {
+      throw new ForbiddenException('Transfer not permitted for this wallet');
     }
     if (sender.balanceKobo < legs.amountKobo + legs.feeKobo) {
       throw new BadRequestException('Insufficient balance');

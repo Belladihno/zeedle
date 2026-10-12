@@ -5,6 +5,7 @@ import { GuardsModule } from './common/guards/guards.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { CoreModule } from './core/core.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
@@ -18,6 +19,7 @@ import { WalletsModule } from './modules/wallets/wallets.module.js';
   imports: [
     CoreModule,
     GuardsModule,
+    AdminModule,
     AuthModule,
     UsersModule,
     WalletsModule,

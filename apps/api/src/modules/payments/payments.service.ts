@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   Logger,
@@ -49,6 +50,10 @@ export class PaymentsService {
     if (!user || user.isDeleted) {
       throw new NotFoundException('User not found');
     }
+    const fundingWallet = await this.wallets.findByUserId(userId);
+    if (!fundingWallet.isActive) {
+      throw new ForbiddenException('Wallet frozen. Contact support.');
+    }
     const reference = `zeedle_${uuidv7()}`;
     const session = await this.paystack.initializeTransaction(
       user.email,
@@ -90,6 +95,10 @@ export class PaymentsService {
     await queryRunner.startTransaction();
     try {
       const wallet = await this.wallets.findByUserId(user.id);
+      if (!wallet.isActive) {
+        this.logger.warn(`Webhook for frozen wallet: userId=${user.id}`);
+        throw new ForbiddenException('Wallet frozen');
+      }
       const balanceBefore = wallet.balanceKobo;
       await this.wallets.updateBalance(queryRunner, wallet.id, amount);
       await this.payments.createTransaction(queryRunner, {

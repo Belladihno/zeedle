@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { AdminRepository } from '../admin/admin.repository.js';
 import { SettlementsRepository } from './settlements.repository.js';
 
 export interface SettlementSummary {
@@ -16,6 +17,7 @@ export class SettlementsService {
   constructor(
     private readonly settlements: SettlementsRepository,
     private readonly db: DataSource,
+    private readonly audit: AdminRepository,
   ) {}
 
   async run(adminId: string, periodStart: string, periodEnd: string): Promise<SettlementSummary> {
@@ -42,6 +44,13 @@ export class SettlementsService {
         count,
       );
       await queryRunner.commitTransaction();
+      await this.audit.writeAudit(
+        adminId,
+        'SETTLEMENT_RUN',
+        'settlement',
+        completed.id,
+        `Settlement window ${from.toISOString()}–${to.toISOString()}: ${count} transactions, ${totalAmount} kobo`,
+      );
       return {
         id: completed.id,
         periodStart: completed.periodStart,

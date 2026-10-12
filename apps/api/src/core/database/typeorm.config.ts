@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { RefreshToken } from '../../modules/auth/entities/refresh-token.entity.js';
+import { AuditLog } from '../../modules/admin/entities/audit-log.entity.js';
 import { Notification } from '../../modules/notifications/entities/notification.entity.js';
 import { Settlement } from '../../modules/settlements/entities/settlement.entity.js';
 import { Transaction } from '../../modules/transactions/entities/transaction.entity.js';
@@ -9,6 +10,7 @@ import { User } from '../../modules/users/entities/user.entity.js';
 import { Wallet } from '../../modules/wallets/entities/wallet.entity.js';
 import { AddTransactionIndexes1790812800001 } from '../../migrations/1790812800001-AddTransactionIndexes.js';
 import { AddWalletAccountNumber1790966400002 } from '../../migrations/1790966400002-AddWalletAccountNumber.js';
+import { CreateAuditLogs1791052800003 } from '../../migrations/1791052800003-CreateAuditLogs.js';
 import { CreateCoreTables1790812800000 } from '../../migrations/1790812800000-CreateCoreTables.js';
 
 export function buildTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions {
@@ -18,11 +20,12 @@ export function buildTypeOrmOptions(config: ConfigService): TypeOrmModuleOptions
     type: 'postgres',
     url,
     synchronize: false,
-    entities: [User, Wallet, Transaction, TransactionPin, Settlement, Notification, RefreshToken],
+    entities: [User, Wallet, Transaction, TransactionPin, Settlement, Notification, RefreshToken, AuditLog],
     migrations: [
       CreateCoreTables1790812800000,
       AddTransactionIndexes1790812800001,
       AddWalletAccountNumber1790966400002,
+      CreateAuditLogs1791052800003,
     ],
     migrationsRun: true,
     ...(useSsl ? { ssl: { rejectUnauthorized: false as const } } : {}),

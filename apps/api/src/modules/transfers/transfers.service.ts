@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -57,6 +58,12 @@ export class TransfersService {
     }
     const senderWallet = await this.wallets.findByUserId(senderId);
     const recipientWallet = await this.wallets.findByUserId(recipient.id);
+    if (!senderWallet.isActive) {
+      throw new ForbiddenException('Wallet frozen. Contact support.');
+    }
+    if (!recipientWallet.isActive) {
+      throw new NotFoundException('Recipient not found');
+    }
 
     const queryRunner = this.db.createQueryRunner();
     await queryRunner.connect();
