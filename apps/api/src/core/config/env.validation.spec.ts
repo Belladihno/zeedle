@@ -8,7 +8,6 @@ const validEnv = {
   JWT_PRIVATE_KEY: 'a'.repeat(40),
   JWT_PUBLIC_KEY: 'b'.repeat(40),
   PAYSTACK_SECRET: 'sk_test_abc123',
-  PAYSTACK_WEBHOOK_SECRET: 'whsec_test_abc123',
 };
 
 function mockExit() {

@@ -26,8 +26,6 @@ services:
         value: 7d
       - key: PAYSTACK_SECRET
         sync: false
-      - key: PAYSTACK_WEBHOOK_SECRET
-        sync: false
       - key: PAYSTACK_BASE_URL
         value: https://api.paystack.co
       - key: UPSTASH_REDIS_REST_URL
