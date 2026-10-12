@@ -1,29 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types.js';
-import { AppModule } from './../src/app.module.js';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createTestApp } from './test-app.js';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: NestFastifyApplication;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+  beforeAll(async () => {
+    app = await createTestApp();
+  }, 60000);
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
-
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
+  });
+
+  it('/ (GET) returns the service greeting inside the envelope', async () => {
+    const res = await app.inject({ method: 'GET', url: '/' });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { success: boolean; data: unknown };
+    expect(body.success).toBe(true);
+    expect(typeof body.data).toBe('string');
+  });
+
+  it('/health (GET) reports ok', async () => {
+    const res = await app.inject({ method: 'GET', url: '/health' });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { data: { status: string } };
+    expect(body.data.status).toBe('ok');
   });
 });

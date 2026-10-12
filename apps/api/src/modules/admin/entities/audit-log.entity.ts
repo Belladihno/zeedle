@@ -13,7 +13,7 @@ export class AuditLog extends BaseEntity {
   @Column('uuid')
   actorId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   action: AuditAction;
 
   @Column()
