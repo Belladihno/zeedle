@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Icon } from '@/components/brand';
-import { useSettlements } from '@/lib/hooks';
+import { usePlatformMetrics, useSettlements } from '@/lib/hooks';
 
 function naira(kobo: number): string {
   return `₦${(kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
@@ -10,6 +10,7 @@ function naira(kobo: number): string {
 
 export default function OverviewPage() {
   const batches = useSettlements(1, 100);
+  const metrics = usePlatformMetrics();
 
   const items = batches.data?.items ?? [];
   const settledVolume = items
@@ -75,15 +76,22 @@ export default function OverviewPage() {
             <span className="text-[11px] uppercase tracking-wider text-text-muted">
               Unsettled Window
             </span>
-            <span className="rounded bg-hover px-1.5 py-0.5 text-[11px] text-text-muted">
-              Pending API §5.1
-            </span>
+            {metrics.data && metrics.data.unsettledCount > 0 ? (
+              <span className="flex items-center gap-1 rounded-full bg-pending/15 px-2 py-0.5 text-[11px] text-pending">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-pending" />
+                Open
+              </span>
+            ) : (
+              <span className="rounded-full bg-credit/15 px-2 py-0.5 text-[11px] text-credit">
+                Clear
+              </span>
+            )}
           </div>
-          <div className="tabular my-2 text-[28px] font-bold leading-8 tracking-tight text-text-muted">
-            ———
+          <div className="tabular my-2 text-[28px] font-bold leading-8 tracking-tight">
+            {metrics.isLoading ? '…' : naira(metrics.data?.unsettledKobo ?? 0)}
           </div>
           <div className="flex items-center justify-between text-[11px] text-text-muted">
-            <span>Needs the metrics endpoint</span>
+            <span>{metrics.data?.unsettledCount ?? 0} unsettled txns</span>
             <span className="font-medium">Pending batch trigger</span>
           </div>
         </div>
@@ -94,15 +102,22 @@ export default function OverviewPage() {
             <span className="text-[11px] uppercase tracking-wider text-text-muted">
               Wallets & Accounts
             </span>
-            <span className="rounded bg-hover px-1.5 py-0.5 text-[11px] text-text-muted">
-              Pending API §5.1
-            </span>
           </div>
-          <div className="tabular my-2 text-[28px] font-bold leading-8 tracking-tight text-text-muted">
-            ———
+          <div className="my-2 flex items-baseline gap-2">
+            <span className="tabular text-[28px] font-bold leading-8 tracking-tight">
+              {metrics.isLoading ? '…' : (metrics.data?.activeWallets ?? 0).toLocaleString()}
+            </span>
+            <span className="text-xs text-text-muted">Active Wallets</span>
           </div>
           <div className="flex items-center justify-between text-[11px] text-text-muted">
-            <span>Needs the metrics endpoint</span>
+            <span>{metrics.data?.users ?? 0} registered users</span>
+            {(metrics.data?.frozenWallets ?? 0) > 0 ? (
+              <span className="font-medium text-debit">
+                {metrics.data?.frozenWallets} frozen
+              </span>
+            ) : (
+              <span className="font-medium text-credit">0 frozen</span>
+            )}
           </div>
         </div>
 

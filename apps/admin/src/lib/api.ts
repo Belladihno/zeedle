@@ -80,6 +80,12 @@ export async function apiGet<T>(path: string, options?: Options): Promise<T> {
   return json.data;
 }
 
+export async function apiPatch<T>(path: string, body: unknown, options?: Options): Promise<T> {
+  const res = await api.patch(path, { json: body, ...options });
+  const json = (await res.json()) as Envelope<T>;
+  return json.data;
+}
+
 /** Extracts human-readable detail from a ky HTTPError. */
 export async function problemDetail(error: unknown): Promise<string> {
   const httpError = error as {
