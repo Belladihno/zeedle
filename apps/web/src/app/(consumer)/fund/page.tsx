@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 import { Icon } from '@/components/brand';
 import { problemDetail } from '@/lib/api';
 import { newIdempotencyKey, useFundWallet, useWallet } from '@/lib/hooks';
@@ -9,12 +9,22 @@ import { newIdempotencyKey, useFundWallet, useWallet } from '@/lib/hooks';
 const CHIPS = [1000, 5000, 10000, 20000, 50000, 100000];
 
 export default function FundPage() {
+  return (
+    <Suspense>
+      <FundContent />
+    </Suspense>
+  );
+}
+
+function FundContent() {
   const router = useRouter();
+  const params = useSearchParams();
   const wallet = useWallet();
   const fund = useFundWallet();
   const [amountText, setAmountText] = useState('20,000');
   const [error, setError] = useState('');
 
+  const returnedReference = params.get('reference') ?? params.get('trxref');
   const naira = Number(amountText.replace(/[^0-9]/g, ''));
 
   function format(raw: string) {
@@ -190,6 +200,30 @@ export default function FundPage() {
       </div>
 
       <div className="space-y-3 pt-2">
+        {returnedReference ? (
+          <div className="flex items-start gap-2.5 rounded-xl bg-credit/10 p-3.5">
+            <span className="mt-0.5 shrink-0 text-credit">
+              <Icon name="check_circle" size={20} />
+            </span>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-credit">Payment received</span>
+              <p className="text-[11px] leading-relaxed text-text-secondary">
+                Reference{' '}
+                <span className="tabular font-mono">{returnedReference.slice(0, 20)}…</span>.
+                Your wallet updates automatically once Paystack confirms — usually within
+                seconds.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.replace('/dashboard')}
+                className="mt-1 flex items-center gap-1 self-start text-xs font-medium text-brand hover:underline"
+              >
+                <span>Back to dashboard</span>
+                <Icon name="arrow_forward" size={14} />
+              </button>
+            </div>
+          </div>
+        ) : null}
         <button
           type="button"
           onClick={submit}

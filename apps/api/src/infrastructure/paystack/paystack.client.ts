@@ -20,7 +20,7 @@ export interface PaystackWebhookData {
 export class PaystackClient {
   private readonly http: AxiosInstance;
 
-  constructor(config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
     this.http = axios.create({
       baseURL: config.get<string>('PAYSTACK_BASE_URL', 'https://api.paystack.co'),
       headers: { Authorization: `Bearer ${config.getOrThrow<string>('PAYSTACK_SECRET')}` },
@@ -38,6 +38,10 @@ export class PaystackClient {
       email,
       amount: amountKobo,
       reference,
+      callback_url: this.config.get<string>(
+        'PAYSTACK_CALLBACK_URL',
+        'http://localhost:3001/fund',
+      ),
     });
     return data.data as PaystackInitResponse;
   }

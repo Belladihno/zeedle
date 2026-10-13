@@ -11,6 +11,7 @@ const baseSchema = z.object({
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   PAYSTACK_SECRET: z.string().startsWith('sk_', 'PAYSTACK_SECRET must begin with sk_'),
   PAYSTACK_BASE_URL: z.string().default('https://api.paystack.co'),
+  PAYSTACK_CALLBACK_URL: z.string().default('http://localhost:3001/fund'),
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.coerce.number().int().min(1).max(65535).default(6379),
   UPSTASH_REDIS_REST_URL: z.string().optional(),
